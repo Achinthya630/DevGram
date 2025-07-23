@@ -1,0 +1,21 @@
+{
+  "name": "devgram",
+  "version": "1.0.0",
+  "description": "Developers personal social media. Swipe, Connect, Develop",
+  "main": "index.js",
+  "scripts": {
+    "dev" : "nodemon src/app.js",
+    "start" : "node src/app.js"
+  },
+  "keywords": [
+    "NodeJS",
+    "Develop",
+    "Social",
+    "JavaScript"
+  ],
+  "author": "Achinthya Krishna",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
