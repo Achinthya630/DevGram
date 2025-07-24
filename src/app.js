@@ -48,6 +48,7 @@ app.use(
 //authorization parts >>
 
 app.use("/admin/login", (req, res) => {
+  // throw err;
   console.log("No need for authorization. You can login and then authorize");
   res.send("Login here.");
 });
@@ -63,4 +64,10 @@ app.use("/admin/deleteUser", adminAuth, (req, res) => {
 app.use("/admin", adminAuth, (req, res) => {
   console.log("Accessed the Admin");
   res.send("Congrats! You are authorized");
+});
+
+app.use("/", (err, req, res, next) => {
+  if (err) {
+    res.status(500).send("Something went wrong");
+  }
 });
