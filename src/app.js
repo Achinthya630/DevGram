@@ -1,5 +1,5 @@
 const express = require("express");
-
+const { adminAuth } = require("./middlewares/auth.js");
 const app = express();
 
 app.listen(7777, () => {
@@ -44,3 +44,23 @@ app.use(
     res.send("Response sent from route handler 3");
   }
 );
+
+//authorization parts >>
+
+app.use("/admin/login", (req, res) => {
+  console.log("No need for authorization. You can login and then authorize");
+  res.send("Login here.");
+});
+
+app.get("/admin/getData", adminAuth, (req, res) => {
+  res.send("Getting data");
+});
+
+app.use("/admin/deleteUser", adminAuth, (req, res) => {
+  res.send("Deleting the user");
+});
+
+app.use("/admin", adminAuth, (req, res) => {
+  console.log("Accessed the Admin");
+  res.send("Congrats! You are authorized");
+});
