@@ -15,15 +15,12 @@ connectDB()
     console.error("Error connecting to the DB");
   });
 
+
+app.use(express.json());
+
 app.post("/signup", async (req, res) => {
   //we need to use the User model that we imported and create an instance of it. We use const name = new ModelName({obj});
-  const userData = new User({
-    firstName: "Ananya",
-    lastName: "Maiya",
-    emailID: "ananya@gmail.com",
-    password: "ananya@123",
-    age: 21,
-  });
+  const userData = new User(req.body);
 
   //we can now save the instance - push it to the db using the .save() method. User.save() is using await.
 
@@ -34,3 +31,52 @@ app.post("/signup", async (req, res) => {
     res.status(400).send("Error saving data to DB");
   }
 });
+
+
+app.get("/user", async (req,res) => {
+  // const userEmail = req.body.emailID;
+  // console.log(userEmail);
+
+  try{
+    const user1 = await User.find();//mongodb command to find
+    if(!user1){
+      res.status(404).send("User not found");
+    } else {
+      res.send(user1);
+    }
+  } catch {
+    res.status(404).send("Something went wrong");
+  }
+})
+
+
+app.get("/user/one", async (req,res) => {
+  const userEmail = req.body.emailID;
+
+  try {
+    const user = await User.findOne({emailID: userEmail});//mongodb command findOne
+    if(!user){
+      res.status(404).send("No user found");
+    } else {
+      res.send(user);
+    }
+    
+  } catch (error) {
+    res.status(404).send("Some error");
+  }
+})
+
+app.get("/user/byId", async (req,res) =>{
+  const id = req.body._id;
+
+  try {
+    const user = await User.findById(id);//find the user based on the id
+    if(!user){
+      res.status(404).send("No user found");
+    } else {
+      res.send(user);
+    }
+  } catch (error) {
+    res.status(400).send("Error:" + error);
+  }
+})
