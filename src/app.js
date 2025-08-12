@@ -15,7 +15,6 @@ connectDB()
     console.error("Error connecting to the DB");
   });
 
-
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
@@ -28,18 +27,17 @@ app.post("/signup", async (req, res) => {
     await userData.save();
     res.send("User data saved to DB successfully");
   } catch (error) {
-    res.status(400).send("Error saving data to DB");
+    res.status(400).send("Error saving data to DB " + error);
   }
 });
 
-
-app.get("/user", async (req,res) => {
+app.get("/user", async (req, res) => {
   // const userEmail = req.body.emailID;
   // console.log(userEmail);
 
-  try{
-    const user1 = await User.find();//mongodb command to find
-    if(!user1){
+  try {
+    const user1 = await User.find(); //mongodb command to find
+    if (!user1) {
       res.status(404).send("User not found");
     } else {
       res.send(user1);
@@ -47,31 +45,29 @@ app.get("/user", async (req,res) => {
   } catch {
     res.status(404).send("Something went wrong");
   }
-})
+});
 
-
-app.get("/user/one", async (req,res) => {
+app.get("/user/one", async (req, res) => {
   const userEmail = req.body.emailID;
 
   try {
-    const user = await User.findOne({emailID: userEmail});//mongodb command findOne
-    if(!user){
+    const user = await User.findOne({ emailID: userEmail }); //mongodb command findOne
+    if (!user) {
       res.status(404).send("No user found");
     } else {
       res.send(user);
     }
-    
   } catch (error) {
     res.status(404).send("Some error");
   }
-})
+});
 
-app.get("/user/byId", async (req,res) =>{
+app.get("/user/byId", async (req, res) => {
   const id = req.body._id;
 
   try {
-    const user = await User.findById(id);//find the user based on the id
-    if(!user){
+    const user = await User.findById(id); //find the user based on the id
+    if (!user) {
       res.status(404).send("No user found");
     } else {
       res.send(user);
@@ -79,23 +75,19 @@ app.get("/user/byId", async (req,res) =>{
   } catch (error) {
     res.status(400).send("Error:" + error);
   }
-})
+});
 
-
-
-
-app.patch("/update", async (req,res) => {
+app.patch("/update", async (req, res) => {
   const id = req.body.id;
   const update = req.body;
   try {
     const data = await User.findByIdAndUpdate(id, update);
-    if(!data){
+    if (!data) {
       res.send("No user found");
     } else {
       res.send("Updated the data");
     }
-
   } catch {
     res.status(400).send("Something went wrong");
   }
-})
+});
