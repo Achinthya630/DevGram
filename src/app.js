@@ -80,3 +80,22 @@ app.get("/user/byId", async (req,res) =>{
     res.status(400).send("Error:" + error);
   }
 })
+
+
+
+
+app.patch("/update", async (req,res) => {
+  const id = req.body.id;
+  const update = req.body;
+  try {
+    const data = await User.findByIdAndUpdate(id, update);
+    if(!data){
+      res.send("No user found");
+    } else {
+      res.send("Updated the data");
+    }
+
+  } catch {
+    res.status(400).send("Something went wrong");
+  }
+})
