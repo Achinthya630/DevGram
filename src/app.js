@@ -3,6 +3,7 @@ const connectDB = require("./config/database");
 const User = require("./models/user");
 const app = express();
 
+
 //connects to the db, returns a promise, so we use then and catch.
 connectDB()
   .then(() => {
@@ -77,17 +78,25 @@ app.get("/user/byId", async (req, res) => {
   }
 });
 
-app.patch("/update", async (req, res) => {
-  const id = req.body.id;
+app.patch("/update/:userID", async (req, res) => {
+  const id = req.params?.userID;
   const update = req.body;
+
   try {
-    const data = await User.findByIdAndUpdate(id, update);
+    const ALLOWED_UPDATES = ["firstName", "lastName", "password"];
+    const isUpdateAllowed = Object.keys(update).every((k) => ALLOWED_UPDATES.includes(k));
+    if(!isUpdateAllowed){
+      throw new Error("Update not allowed");
+    }
+    const data = await User.findByIdAndUpdate(id, update,{
+      runValidators: true
+    });
     if (!data) {
       res.send("No user found");
     } else {
       res.send("Updated the data");
     }
-  } catch {
-    res.status(400).send("Something went wrong");
+  } catch (error){
+    res.status(400).send("Something went wrong " + error);
   }
 });
