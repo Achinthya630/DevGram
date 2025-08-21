@@ -2,7 +2,9 @@ const express = require("express");
 const connectDB = require("./config/database");
 const User = require("./models/user");
 const app = express();
-
+const { validateSignupData } = require("./utils/validation");
+const bcrypt = require('bcrypt');
+const validator = require('validator');
 
 //connects to the db, returns a promise, so we use then and catch.
 connectDB()
@@ -19,14 +21,28 @@ connectDB()
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-  //we need to use the User model that we imported and create an instance of it. We use const name = new ModelName({obj});
-  const userData = new User(req.body);
-
-  //we can now save the instance - push it to the db using the .save() method. User.save() is using await.
-
   try {
+    //validate password - is strong password??
+    validateSignupData(req);
+
+    const {firstName, lastName, emailID, password} = req.body;
+
+    //password encryption using bcrypt
+    const passHash = await bcrypt.hash(password, 10);
+
+    //we need to use the User model that we imported and create an instance of it. We use const name = new ModelName({obj});
+    const userData = new User({
+      firstName,
+      lastName,
+      emailID,
+      password : passHash
+    });
+
+    //we can now save the instance - push it to the db using the .save() method. User.save() is using await.
+
+
     await userData.save();
-    res.send("User data saved to DB successfully");
+    res.send("User saved to the DB");
   } catch (error) {
     res.status(400).send("Error saving data to DB " + error);
   }
@@ -84,19 +100,47 @@ app.patch("/update/:userID", async (req, res) => {
 
   try {
     const ALLOWED_UPDATES = ["firstName", "lastName", "password"];
-    const isUpdateAllowed = Object.keys(update).every((k) => ALLOWED_UPDATES.includes(k));
-    if(!isUpdateAllowed){
+    const isUpdateAllowed = Object.keys(update).every((k) =>
+      ALLOWED_UPDATES.includes(k)
+    );
+    if (!isUpdateAllowed) {
       throw new Error("Update not allowed");
     }
-    const data = await User.findByIdAndUpdate(id, update,{
-      runValidators: true
+    const data = await User.findByIdAndUpdate(id, update, {
+      runValidators: true,
     });
     if (!data) {
       res.send("No user found");
     } else {
       res.send("Updated the data");
     }
-  } catch (error){
+  } catch (error) {
     res.status(400).send("Something went wrong " + error);
+  }
+});
+
+app.post("/login", async(req,res) => {
+  
+  try {
+    const {emailID, password} = req.body;
+
+    if(!validator.isEmail(emailID)){
+      throw new Error("Invalid email");
+    }
+
+    const user = await User.findOne({emailID:emailID});//needs to be await or else gives error 
+    if(!user){
+      throw new Error("User not registered");
+    }
+
+    const isValidPassword = await bcrypt.compare(password, user.password);
+
+    if(isValidPassword){
+      res.send("Login successful!!");
+    } else {
+      throw new Error("Invalid credentials");
+    }
+  } catch (error) {
+    res.status(400).send("Error: " + error.message)
   }
 });
