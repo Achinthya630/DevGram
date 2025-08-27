@@ -1,5 +1,8 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const jwt = require("jsonwebtoken");
+const bcrypt = require('bcrypt');
+
 //creating a schema - use this:
 const userSchema = new mongoose.Schema(
   {
@@ -18,12 +21,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
-      //
-      // validate(value){
-      //     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      //     if(!emailRegex.test(value)) throw new Error("Not a valid email address");
-      // }
-      //
       validate(value) {
         if (!validator.isEmail(value)) {
           throw new Error("Invalid Email Address");
@@ -47,15 +44,43 @@ const userSchema = new mongoose.Schema(
         }
       },
     },
+    skills : {
+      type: [String],
+    },
+    about: {
+      type: String,
+      default: "Hey There! I am ready to Code!!"
+    },
+    photoUrl: {
+      type: String, 
+      default: "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png",
+      validate(value) {
+        if (!validator.isURL(value)) {
+          throw new Error("Invalid Photo URL: " + value);
+        }
+      }
+    }
   },
   {
     timestamps: true,
   }
 );
 
-//creating a model using the schema that we just created:
-const User = mongoose.model("User", userSchema);
 
-module.exports = User;
+userSchema.methods.getJWT = async function () {
+  const user = this;
+  const token = await jwt.sign({ _id: user._id }, "devgRAM@630", { expiresIn: "1d" });
+  return token;
+};
+
+userSchema.methods.validatePassword = async function(passwordInputByUser){
+  const user = this;
+  const passwordHash = this.password;
+
+  const isValidPassword = await bcrypt.compare(passwordInputByUser, passwordHash);
+  return isValidPassword;
+}
+
+module.exports = mongoose.model("User", userSchema);
 
 //you can also do module.exports = mongoose.model("User", userScheme) directly instead of creating another const
