@@ -38,24 +38,24 @@ authRouter.post("/login", async (req, res) => {
     const { emailID, password } = req.body;
 
     if (!validator.isEmail(emailID)) {
-      throw new Error("Invalid email");
+      throw new Error("Invalid email address");
     }
 
     const user = await User.findOne({ emailID: emailID }); //needs to be await or else gives error
     if (!user) {
-      throw new Error("User not registered");
+      throw new Error("User not linked to a DevGram account");
     }
 
     const isValidPassword = await user.validatePassword(password);
     if (isValidPassword) {
       const token = await user.getJWT();
       res.cookie("token", token, { expires: new Date(Date.now() + 86400000) });
-      res.send("Login successful!!");
+      res.send(user);
     } else {
-      throw new Error("Invalid credentials");
+      throw new Error("Incorrect username or password");
     }
   } catch (error) {
-    res.status(400).send("Error: " + error.message);
+    res.status(400).send(error.message);
   }
 });
 

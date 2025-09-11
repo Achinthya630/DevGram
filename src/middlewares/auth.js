@@ -8,7 +8,7 @@ const userAuth = async(req,res, next) => {
         //get the token
         const {token} = req.cookies;
         if(!token) {
-            throw new Error("User Logged Out");
+            return res.status(401).send("User not logged in");
         }
         //verify the token
         const decodedToken = jwt.verify(token,"devgRAM@630");
